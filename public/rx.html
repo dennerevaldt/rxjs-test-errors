@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://unpkg.com/@reactivex/rxjs@6.3.3/dist/global/rxjs.umd.js"></script>
+    <title>RX</title>
+  </head>
+  <body>
+    <script>
+      const {
+        of,
+        ajax: { ajax },
+        forkJoin,
+        throwError,
+        isObservable
+      } = rxjs;
+      const {
+        mergeMap,
+        switchMap,
+        concatMap,
+        exhaustMap,
+        pluck,
+        catchError,
+        filter,
+        empty,
+        map
+      } = rxjs.operators;
+
+      const a = ajax({
+        url: "http://localhost:3000/one"
+      }).pipe(catchError(e => of(throwError(Error("one")))));
+
+      const b = ajax({
+        url: "http://localhost:3000/two"
+      }).pipe(catchError(e => of(throwError(Error("two")))));
+
+      const c = ajax({
+        url: "http://localhost:3000/three"
+      }).pipe(catchError(e => of(throwError(Error("three")))));
+
+      of(a, b, c)
+        .pipe(
+          concatMap(e => e),
+          filter(e => e)
+        )
+        .subscribe(obs => {
+          if (isObservable(obs)) {
+            return obs.subscribe(
+              e => e,
+              err => console.log("erro", err.message)
+            );
+          }
+          console.log(obs.response.data);
+        });
+    </script>
+  </body>
+</html>
